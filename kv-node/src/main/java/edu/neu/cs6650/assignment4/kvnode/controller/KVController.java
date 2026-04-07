@@ -64,6 +64,15 @@ public class KVController {
     return ResponseEntity.ok().build();
   }
 
+  // Used by leader during read quorum (R > 1) to fetch local value from each follower
+  @GetMapping("/kv/internal")
+  public ResponseEntity<KVResponse> internalGet(@RequestParam("key") @NotBlank String key) {
+    return activeService()
+        .localRead(key)
+        .map(ResponseEntity::ok)
+        .orElseGet(() -> ResponseEntity.notFound().build());
+  }
+
   private KvModeService activeService() {
     if (clusterProperties.isLeaderless()) {
       return leaderlessService;
